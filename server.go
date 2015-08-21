@@ -10,9 +10,15 @@ import (
 )
 
 const (
-	session_key = "9FsmWODVM90d5R9Wo4B6Fol8IXWhqH4m"
-	ClientId    = "https://api.instagram.com/oauth/authorize/?client_id=%s&redirect_uri=%s&response_type=code"
+	session_key  = "9FsmWODVM90d5R9Wo4B6Fol8IXWhqH4m"
+	API_URL      = "https://api.instagram.com/oauth/authorize/?client_id=%s&redirect_uri=%s&response_type=code"
+	ClientId     = ""
+	ClientSecret = ""
+	RedirectUrl  = "0.0.0.0/oauth/instagram/back"
 )
+
+// db作为全局变量存在不太好，想办法从Injecter中取出比较好
+var mysqlDB *sqlx.DB
 
 type H map[string]interface{}
 
@@ -22,7 +28,7 @@ func main() {
 	configRender(m)
 
 	// map DB to context
-	_ = initMySQL(m)
+	mysqlDB = initMySQL(m)
 
 	// serve static files; default is public
 	m.Use(martini.Static("public"))
@@ -33,6 +39,7 @@ func main() {
 
 	m.Group("/oauth", func(r martini.Router) {
 		r.Get("/:appName", getIndex)
+		r.Get("/instagram/back", getRedirectBack)
 	})
 
 	m.Run()
