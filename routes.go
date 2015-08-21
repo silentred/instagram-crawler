@@ -11,25 +11,27 @@ import (
 )
 
 func getIndex(req *http.Request, params martini.Params, rd render.Render, session sessions.Session, db *sqlx.DB) {
+
 	queries := req.URL.Query()
 	fmt.Println(queries)
 
-	appName := params["appName"]
-	fmt.Println(appName)
+	// appName := params["appName"]
+	// fmt.Println(appName)
 
 	//session.Set("hello", "world")
 
 	// You can also get a single result, a la QueryRow
-	pic := Picture{}
-	err := db.Get(&pic, "SELECT * FROM picture WHERE orig_id=1")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%#v\n", pic)
+	// pic := Picture{}
+	// err := db.Get(&pic, "SELECT * FROM picture WHERE orig_id=1")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Printf("%#v\n", pic)
+
+	url := fmt.Sprintf(API_URL, ClientId, RedirectUrl)
 
 	rd.HTML(200, "auth_index", H{
-		"title": "Hello Title",
-		"name":  "Jason Bourn",
+		"url": url,
 	})
 
 }
