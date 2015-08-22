@@ -19,6 +19,11 @@ type User struct {
 	Valid        int    `db:"valid"`
 }
 
+type Message struct {
+	Action string `json:"action"`
+	Data   string `json:"data"`
+}
+
 func (user User) Insert() int {
 	sql := "insert into user (orig_id, name, access_token, last_auth_time, valid) values (:orig_id, :name, :access_token, :last_auth_time, :valid)"
 	result, err := mysqlDB.NamedExec(sql, &user)

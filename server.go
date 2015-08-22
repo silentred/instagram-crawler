@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/beatrichartz/martini-sockets"
 	"github.com/go-martini/martini"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -41,6 +42,8 @@ func main() {
 		r.Get("/:appName", getIndex)
 		r.Get("/instagram/back", getRedirectBack)
 	})
+
+	m.Get("/ws", sockets.JSON(Message{}), wsHandler)
 
 	m.Run()
 }
