@@ -73,23 +73,52 @@ func getRedirectBack(req *http.Request, rd render.Render, db *sqlx.DB, session s
 	user := User{Id: userId, Name: userName, AccessToken: token, LastAuthTime: nowTime, Valid: 1}
 	_ = user.Insert()
 
+	// @TODO Or update
+
 	rd.HTML(200, "redirect_back", H{
 		"userName": userName,
 	})
 
 }
 
+func init() {
+	jobs := make(chan Picture, 50)
+	quit := make(chan int)
+
+	nextURL := make(chan string)
+	nextURL <- RecentURL
+
+	// 任务队列放在全局执行，ws来控制是否开始或停止。 任务队列如果放在wsHandler中，一旦连接关闭，整个任务就停止了。
+	out := preparePicture(jobs, nextURL, quit)
+	doneCnt := savingPicture(out)
+	
+}
+
 func wsHandler(params martini.Params, receiver <-chan *Message, sender chan<- *Message, done <-chan bool, disconnect chan<- int, errorChannel <-chan error) {
 
 	// ticker = time.After(30 * time.Minute)
+	
 	for {
 		select {
 		case msg := <-receiver:
 			// here we simply echo the received message to the sender for demonstration purposes
 			// In your app, collect the senders of different clients and do something useful with them
-			fmt.Println(*msg)
-			ret := &Message{Action: "back", Data: "back data"}
-			sender <- ret
+			switch msg.Action {
+			case "start":
+				
+
+			case "stop":
+				quit <- 1
+			}
+
+			go func () {
+				for {
+					val := <- doneCnt
+					ret := &Message{Action: "doneCnt", Data: val}
+					sender <- ret
+				}
+			}
+			
 		//case <-ticker:
 		// This will close the connection after 30 minutes no matter what
 		// To demonstrate use of the disconnect channel
@@ -97,8 +126,8 @@ func wsHandler(params martini.Params, receiver <-chan *Message, sender chan<- *M
 		//	disconnect <- websocket.CloseNormalClosure
 		case <-done:
 			// the client disconnected, so you should return / break if the done channel gets sent a message
-			fmt.Println("client close the connection.")
-			return
+			fmt.Println("client close the connection. is server loop still going?")
+			//return
 		case err := <-errorChannel:
 			// Uh oh, we received an error. This will happen before a close if the client did not disconnect regularly.
 			// Maybe useful if you want to store statistics
@@ -106,4 +135,51 @@ func wsHandler(params martini.Params, receiver <-chan *Message, sender chan<- *M
 		}
 	}
 
+}
+
+/**
+ *  get pics and next_url from api, save next_url to channel
+ */
+func getPictureFromApi(url chan string) []Picture {
+	pics := make([]Picture, 0, 30)
+	next := <-url
+	// get from api
+	var result map[string]*json.RawMessage
+	url <- string(*result["next_url"])
+	return pics
+}
+
+func preparePicture(jobs chan Picture, url chan string, quit chan int) <-chan Picture {
+	
+	// continously getting pics from api, fill jobs with recieved pics
+	go func() {
+		for {
+			select {
+			case <-quit:
+				return
+			default:
+				// nextURL is a global channel
+				pics := getPictureFromApi(url)
+				for _, pic := range pics {
+					jobs <- pic
+				}
+			}
+
+		}
+	}()
+	return jobs
+}
+
+func savingPicture(jobs <-chan Picture) <-chan int {
+	done := make(chan int, 30)
+	// continously saving the pics from jobs , and downloading them
+	go func() {
+		for {
+			pic <- jobs
+			pic.Insert()
+			Download(pic.Url, DeterminDst(pic.Url))
+			done <- 1
+		}
+	}()
+	return done
 }

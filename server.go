@@ -16,6 +16,8 @@ const (
 	ClientId     = ""
 	ClientSecret = ""
 	RedirectUrl  = "0.0.0.0/oauth/instagram/back"
+
+	RecentURL = "https://api.instagram.com/.."
 )
 
 // db作为全局变量存在不太好，想办法从Injecter中取出比较好
