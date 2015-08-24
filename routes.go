@@ -182,9 +182,9 @@ func getPictureFromApi(url chan string) []Picture {
 
 	data := result["data"].([]interface{})
 	for _, feed := range data {
-		feed = feed.(map[string]interface{})
-		imageId := feed["id"].(string)
-		images := feed["images"].(map[string]interface{})
+		feedMap := feed.(map[string]interface{})
+		imageId := feedMap["id"].(string)
+		images := feedMap["images"].(map[string]interface{})
 		stdImage := images["standard_resolution"].(map[string]interface{})
 		imageUrl := stdImage["url"].(string)
 		nowTime := int(time.Now().Unix())
