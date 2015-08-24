@@ -6,7 +6,7 @@ var userId = $("#userId").text();
 var ws;
 
 $("#wsConn").click(function(){
-    ws = new WebSocket("ws://localhost:3000/ws?userId="+userId);
+    ws = new WebSocket("ws://50.117.7.122:3000/ws?userId="+userId);
 
     ws.addEventListener("message", function(e){
         console.log("recieve message...");

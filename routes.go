@@ -66,14 +66,14 @@ func getRedirectBack(req *http.Request, rd render.Render, db *sqlx.DB, session s
 	content := HttpPost("https://api.instagram.com/oauth/access_token", postBody, nil, nil)
 	fmt.Println(content)
 
-	var mainContent map[string]*json.RawMessage
+	var mainContent map[string]string
 	json.Unmarshal([]byte(content), &mainContent)
-	token = string(*mainContent["access_token"])
+	token = mainContent["access_token"]
 
-	var userInfo map[string]*json.RawMessage
-	json.Unmarshal(*mainContent["user"], &userInfo)
-	userId = string(*userInfo["id"])
-	userName = string(*userInfo["username"])
+	var userInfo map[string]string
+	json.Unmarshal([]byte(mainContent["user"]), &userInfo)
+	userId = userInfo["id"]
+	userName = userInfo["username"]
 	nowTime := int(time.Now().Unix())
 
 	// save user, token.
@@ -130,9 +130,11 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 					log.Fatal("cannot get user by id: " + userId)
 				}
 				access_token := user.AccessToken
+				fmt.Println(access_token)
 
 				// give value to nextURL, so the goroutine could start
 				url := fmt.Sprintf(RecentURL, access_token)
+				fmt.Println(url)
 				NextURL <- url
 			case "stop":
 				Quit <- 1
@@ -159,8 +161,15 @@ func getPictureFromApi(url chan string) []Picture {
 	next := <-url
 	// get from api
 	var result map[string]map[string]*json.RawMessage
-	content := HttpGet(next, nil, nil)
+	headers := map[string]string{
+		"Host":         "api.instagram.com",
+		"X-Target-URI": "https://api.instagram.com",
+		"connection":   "Keep-Alive",
+	}
+	content := HttpGet(next, nil, headers)
 	json.Unmarshal([]byte(content), &result)
+	fmt.Println(*result["meta"]["error_message"])
+	fmt.Println(*result["meta"]["error_code"])
 	if errName := *result["meta"]["error_type"]; errName != nil {
 		log.Fatal("error type: " + string(errName) + ", probably access_token expired")
 	}
