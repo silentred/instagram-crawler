@@ -135,6 +135,8 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 				url := fmt.Sprintf(RecentURL, access_token)
 				fmt.Println(url)
 				NextURL <- url
+
+				sender <- msg
 			case "stop":
 				Quit <- 1
 			}
@@ -193,10 +195,13 @@ func getPictureFromApi(url chan string) []Picture {
 		pics = append(pics, pic)
 
 	}
-
-	url <- pagination["next_url"].(string)
-
 	fmt.Println(pics)
+
+	nextOne := pagination["next_url"].(string)
+	fmt.Println(nextOne)
+
+	url <- nextOne
+
 	return pics
 }
 
@@ -207,6 +212,7 @@ func preparePicture(jobs chan Picture, url chan string, quit chan int) <-chan Pi
 		for {
 			select {
 			case <-quit:
+				fmt.Println("quiting the preparePicture() functino.")
 				return
 			default:
 				pics := getPictureFromApi(url)

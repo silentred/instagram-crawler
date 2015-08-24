@@ -24,6 +24,12 @@ $("#wsSend").click(function(){
     ws.send(JSON.stringify(msg));
 })
 
+$("#wsQuit").click(function(){
+    var msg = {action: "stop"};
+    console.log("stoping the message");
+    ws.send(JSON.stringify(msg));
+});
+
 
 });
 
