@@ -159,13 +159,14 @@ func getPictureFromApi(url chan string) []Picture {
 	pics := make([]Picture, 0, 30)
 	next := <-url
 	// get from api
-	var result map[string]interface{}
 	headers := map[string]string{
 		"Host":         "api.instagram.com",
 		"X-Target-URI": "https://api.instagram.com",
 		"connection":   "Keep-Alive",
 	}
 	content := HttpGet(next, nil, headers)
+
+	var result map[string]interface{}
 	json.Unmarshal([]byte(content), &result)
 
 	meta := result["meta"].(map[string]interface{})
@@ -175,7 +176,7 @@ func getPictureFromApi(url chan string) []Picture {
 
 	fmt.Println(meta)
 
-	pagination := result["pagination"].(map[string]string)
+	pagination := result["pagination"].(map[string]interface{})
 
 	fmt.Println(pagination)
 
@@ -183,17 +184,17 @@ func getPictureFromApi(url chan string) []Picture {
 	for _, feed := range data {
 		imageId := feed["id"].(string)
 		images := feed["images"].(map[string]interface{})
-		stdImage := images["standard_resolution"].(map[string]string)
-		imageUrl := stdImage["url"]
+		stdImage := images["standard_resolution"].(map[string]interface{})
+		imageUrl := stdImage["url"].(string)
 		nowTime := int(time.Now().Unix())
 
-		pic := Picture{Id: string(imageId), Url: string(imageUrl), Status: 0, CreatedTime: nowTime}
+		pic := Picture{Id: imageId, Url: imageUrl, Status: 0, CreatedTime: nowTime}
 		pics = append(pics, pic)
 
 		fmt.Println(pic)
 	}
 
-	url <- string(pagination["next_url"])
+	url <- pagination["next_url"].(string)
 	return pics
 }
 
