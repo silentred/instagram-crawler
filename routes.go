@@ -34,9 +34,6 @@ func getIndex(req *http.Request, params martini.Params, rd render.Render, sessio
 	// user := &User{Id: "123", Name: "jason", AccessToken: "123123", LastAuthTime: 432123, Valid: 1}
 	// ret := user.Insert()
 	// fmt.Println(ret)
-	user := &User{}
-	user.GetById("123")
-	fmt.Println(*user)
 
 	url := fmt.Sprintf(API_URL, ClientId, RedirectUrl)
 
