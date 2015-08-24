@@ -180,8 +180,9 @@ func getPictureFromApi(url chan string) []Picture {
 
 	fmt.Println(pagination)
 
-	data := result["data"].([]map[string]interface{})
+	data := result["data"].([]interface{})
 	for _, feed := range data {
+		feed = feed.(map[string]interface{})
 		imageId := feed["id"].(string)
 		images := feed["images"].(map[string]interface{})
 		stdImage := images["standard_resolution"].(map[string]interface{})
