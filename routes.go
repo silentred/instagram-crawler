@@ -200,11 +200,12 @@ func getPictureFromApi() []Picture {
 	nextOne := pagination["next_url"].(string)
 	fmt.Println(nextOne)
 
-	fmt.Println("the NextURL len is " + string(len(NextURL)))
+	fmt.Println("the NextURL len is ")
+	fmt.Println(len(NextURL))
 
 	NextURL <- nextOne
 
-	fmt.Println("the NextURL len is " + string(len(NextURL)))
+	fmt.Println(len(NextURL))
 
 	return pics
 }
@@ -214,16 +215,17 @@ func preparePicture() {
 	// continously getting pics from api, fill jobs with recieved pics
 	go func() {
 		for {
-			select {
-			case <-Quit:
-				fmt.Println("quiting the preparePicture() functino.")
-				return
-			default:
-				pics := getPictureFromApi()
-				for _, pic := range pics {
-					Jobs <- pic
-				}
+			//select {
+			//case <-Quit:
+			//	fmt.Println("quiting the preparePicture() functino.")
+			//	return
+			//default:
+			pics := getPictureFromApi()
+			fmt.Println("Got pics from api.")
+			for _, pic := range pics {
+				Jobs <- pic
 			}
+			//}
 
 		}
 	}()
