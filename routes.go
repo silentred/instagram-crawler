@@ -94,15 +94,15 @@ var NextURL chan string
 var DoneCnt <-chan int
 
 func init() {
-	Jobs = make(chan Picture, 50)
+	Jobs = make(chan Picture, 100)
 	Quit = make(chan int)
 
 	NextURL = make(chan string)
 	//nextURL <- RecentURL // 通过传入 url来启动抓取
 
 	// 任务队列放在全局执行，ws来控制是否开始或停止。 任务队列如果放在wsHandler中，一旦连接关闭，整个任务就停止了。
-	out := preparePicture(Jobs, NextURL, Quit)
-	DoneCnt = savingPicture(out)
+	preparePicture()
+	DoneCnt = savingPicture()
 }
 
 func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Message, done <-chan bool, disconnect chan<- int, errorChannel <-chan error) {
@@ -157,9 +157,9 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 /**
  *  get pics and next_url from api, save next_url to channel
  */
-func getPictureFromApi(url chan string) []Picture {
+func getPictureFromApi() []Picture {
 	pics := make([]Picture, 0, 30)
-	next := <-url
+	next := <-NextURL
 	// get from api
 	headers := map[string]string{
 		"Host":         "api.instagram.com",
@@ -200,38 +200,37 @@ func getPictureFromApi(url chan string) []Picture {
 	nextOne := pagination["next_url"].(string)
 	fmt.Println(nextOne)
 
-	url <- nextOne
+	NextURL <- nextOne
 
 	return pics
 }
 
-func preparePicture(jobs chan Picture, url chan string, quit chan int) <-chan Picture {
+func preparePicture() {
 
 	// continously getting pics from api, fill jobs with recieved pics
 	go func() {
 		for {
 			select {
-			case <-quit:
+			case <-Quit:
 				fmt.Println("quiting the preparePicture() functino.")
 				return
 			default:
-				pics := getPictureFromApi(url)
+				pics := getPictureFromApi()
 				for _, pic := range pics {
-					jobs <- pic
+					Jobs <- pic
 				}
 			}
 
 		}
 	}()
-	return jobs
 }
 
-func savingPicture(jobs <-chan Picture) <-chan int {
+func savingPicture() <-chan int {
 	done := make(chan int, 30)
 	// continously saving the pics from jobs , and downloading them
 	go func() {
 		for {
-			pic := <-jobs
+			pic := <-Jobs
 			pic.Insert()
 			Download(pic.Url, DeterminDst(pic.Url))
 			done <- 1
