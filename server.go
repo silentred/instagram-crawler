@@ -15,7 +15,7 @@ const (
 	API_URL      = "https://api.instagram.com/oauth/authorize/?client_id=%s&redirect_uri=%s&response_type=code"
 	ClientId     = "875c559eb1964e308b840dfcac0533a2"
 	ClientSecret = "b29d172d74ad42699e972df632a867fc"
-	RedirectUrl  = "http://localhost:3000/oauth/instagram/back"
+	RedirectUrl  = "http://50.117.7.122:3000/oauth/instagram/back"
 
 	RecentURL = "https://api.instagram.com/v1/users/self/feed?access_token=%s"
 )
