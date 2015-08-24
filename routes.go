@@ -70,10 +70,9 @@ func getRedirectBack(req *http.Request, rd render.Render, db *sqlx.DB, session s
 	json.Unmarshal([]byte(content), &mainContent)
 	token = mainContent["access_token"].(string)
 
-	var userInfo map[string]string
-	json.Unmarshal(mainContent["user"].([]byte), &userInfo)
-	userId = userInfo["id"]
-	userName = userInfo["username"]
+	userInfo := mainContent["user"].(map[string]interface{})
+	userId = userInfo["id"].(string)
+	userName = userInfo["username"].(string)
 	nowTime := int(time.Now().Unix())
 
 	// save user, token.
