@@ -157,7 +157,7 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 /**
  *  get pics and next_url from api, save next_url to channel
  */
-func getPictureFromApi() []Picture {
+func getPictureFromApi() ([]Picture, string) {
 	pics := make([]Picture, 0, 30)
 	next := <-NextURL
 	// get from api
@@ -207,7 +207,7 @@ func getPictureFromApi() []Picture {
 
 	fmt.Println(len(NextURL))
 
-	return pics
+	return pics, nextOne
 }
 
 func preparePicture() {
@@ -220,11 +220,13 @@ func preparePicture() {
 				fmt.Println("quiting the preparePicture() functino.")
 				return
 			default:
-				pics := getPictureFromApi()
+				pics, nextOne := getPictureFromApi()
 				fmt.Println("Got pics from api.")
 				for _, pic := range pics {
 					Jobs <- pic
 				}
+				NextURL <- nextOne
+				fmt.Println(len(NextURL))
 			}
 
 		}
