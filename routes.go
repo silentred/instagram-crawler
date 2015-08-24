@@ -107,13 +107,13 @@ func init() {
 
 func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Message, done <-chan bool, disconnect chan<- int, errorChannel <-chan error) {
 
-	go func() {
-		for {
-			val := <-DoneCnt
-			ret := &Message{Action: "DoneCnt", Data: string(val)}
-			sender <- ret
-		}
-	}()
+	//go func() {
+	//	for {
+	//		val := <-DoneCnt
+	//		ret := &Message{Action: "DoneCnt", Data: string(val)}
+	//		sender <- ret
+	//	}
+	//}()
 
 	for {
 		select {
@@ -200,7 +200,11 @@ func getPictureFromApi() []Picture {
 	nextOne := pagination["next_url"].(string)
 	fmt.Println(nextOne)
 
+	fmt.Println("the NextURL len is " + string(len(NextURL)))
+
 	NextURL <- nextOne
+
+	fmt.Println("the NextURL len is " + string(len(NextURL)))
 
 	return pics
 }
@@ -226,11 +230,12 @@ func preparePicture() {
 }
 
 func savingPicture() <-chan int {
-	done := make(chan int, 30)
+	done := make(chan int, 300)
 	// continously saving the pics from jobs , and downloading them
 	go func() {
 		for {
 			pic := <-Jobs
+			fmt.Println("downloading the pic: " + pic.Id)
 			pic.Insert()
 			Download(pic.Url, DeterminDst(pic.Url))
 			done <- 1
