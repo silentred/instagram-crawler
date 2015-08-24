@@ -192,10 +192,11 @@ func getPictureFromApi(url chan string) []Picture {
 		pic := Picture{Id: imageId, Url: imageUrl, Status: 0, CreatedTime: nowTime}
 		pics = append(pics, pic)
 
-		fmt.Println(pic)
 	}
 
 	url <- pagination["next_url"].(string)
+
+	fmt.Println(pics)
 	return pics
 }
 
@@ -210,7 +211,7 @@ func preparePicture(jobs chan Picture, url chan string, quit chan int) <-chan Pi
 			default:
 				pics := getPictureFromApi(url)
 				for _, pic := range pics {
-					Jobs <- pic
+					jobs <- pic
 				}
 			}
 
