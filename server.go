@@ -13,9 +13,9 @@ import (
 const (
 	session_key  = "9FsmWODVM90d5R9Wo4B6Fol8IXWhqH4m"
 	API_URL      = "https://api.instagram.com/oauth/authorize/?client_id=%s&redirect_uri=%s&response_type=code"
-	ClientId     = ""
-	ClientSecret = ""
-	RedirectUrl  = "0.0.0.0/oauth/instagram/back"
+	ClientId     = "875c559eb1964e308b840dfcac0533a2"
+	ClientSecret = "b29d172d74ad42699e972df632a867fc"
+	RedirectUrl  = "http://api.7kk.com/oauth/instagram/back"
 
 	RecentURL = "https://api.instagram.com/.."
 )
