@@ -107,13 +107,13 @@ func init() {
 
 func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Message, done <-chan bool, disconnect chan<- int, errorChannel <-chan error) {
 
-	//go func() {
-	//	for {
-	//		val := <-DoneCnt
-	//		ret := &Message{Action: "DoneCnt", Data: string(val)}
-	//		sender <- ret
-	//	}
-	//}()
+	go func() {
+		for {
+			val := <-DoneCnt
+			ret := &Message{Action: "DoneCnt", Data: string(val)}
+			sender <- ret
+		}
+	}()
 
 	for {
 		select {
@@ -203,7 +203,7 @@ func getPictureFromApi() []Picture {
 	fmt.Println("the NextURL len is ")
 	fmt.Println(len(NextURL))
 
-	NextURL <- nextOne
+	//NextURL <- nextOne
 
 	fmt.Println(len(NextURL))
 
@@ -215,17 +215,17 @@ func preparePicture() {
 	// continously getting pics from api, fill jobs with recieved pics
 	go func() {
 		for {
-			//select {
-			//case <-Quit:
-			//	fmt.Println("quiting the preparePicture() functino.")
-			//	return
-			//default:
-			pics := getPictureFromApi()
-			fmt.Println("Got pics from api.")
-			for _, pic := range pics {
-				Jobs <- pic
+			select {
+			case <-Quit:
+				fmt.Println("quiting the preparePicture() functino.")
+				return
+			default:
+				pics := getPictureFromApi()
+				fmt.Println("Got pics from api.")
+				for _, pic := range pics {
+					Jobs <- pic
+				}
 			}
-			//}
 
 		}
 	}()
