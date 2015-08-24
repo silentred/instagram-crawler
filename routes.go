@@ -66,12 +66,12 @@ func getRedirectBack(req *http.Request, rd render.Render, db *sqlx.DB, session s
 	content := HttpPost("https://api.instagram.com/oauth/access_token", postBody, nil, nil)
 	fmt.Println(content)
 
-	var mainContent map[string]string
+	var mainContent map[string]interface{}
 	json.Unmarshal([]byte(content), &mainContent)
-	token = mainContent["access_token"]
+	token = mainContent["access_token"].(string)
 
 	var userInfo map[string]string
-	json.Unmarshal([]byte(mainContent["user"]), &userInfo)
+	json.Unmarshal(mainContent["user"].([]byte), &userInfo)
 	userId = userInfo["id"]
 	userName = userInfo["username"]
 	nowTime := int(time.Now().Unix())
