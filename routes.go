@@ -97,7 +97,7 @@ func init() {
 	Jobs = make(chan Picture, 100)
 	Quit = make(chan int)
 
-	NextURL = make(chan string)
+	NextURL = make(chan string, 1)
 	//nextURL <- RecentURL // 通过传入 url来启动抓取
 
 	// 任务队列放在全局执行，ws来控制是否开始或停止。 任务队列如果放在wsHandler中，一旦连接关闭，整个任务就停止了。
@@ -157,7 +157,7 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 /**
  *  get pics and next_url from api, save next_url to channel
  */
-func getPictureFromApi() ([]Picture, string) {
+func getPictureFromApi() []Picture {
 	pics := make([]Picture, 0, 30)
 	next := <-NextURL
 	// get from api
@@ -195,19 +195,19 @@ func getPictureFromApi() ([]Picture, string) {
 		pics = append(pics, pic)
 
 	}
-	fmt.Println(pics)
+	//fmt.Println(pics)
 
 	nextOne := pagination["next_url"].(string)
 	fmt.Println(nextOne)
 
 	fmt.Println("the NextURL len is ")
+	//fmt.Println(len(NextURL))
+
+	NextURL <- nextOne
+
 	fmt.Println(len(NextURL))
 
-	//NextURL <- nextOne
-
-	fmt.Println(len(NextURL))
-
-	return pics, nextOne
+	return pics
 }
 
 func preparePicture() {
@@ -220,13 +220,11 @@ func preparePicture() {
 				fmt.Println("quiting the preparePicture() functino.")
 				return
 			default:
-				pics, nextOne := getPictureFromApi()
+				pics := getPictureFromApi()
 				fmt.Println("Got pics from api.")
 				for _, pic := range pics {
 					Jobs <- pic
 				}
-				NextURL <- nextOne
-				fmt.Println(len(NextURL))
 			}
 
 		}
