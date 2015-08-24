@@ -159,7 +159,7 @@ func getPictureFromApi(url chan string) []Picture {
 	pics := make([]Picture, 0, 30)
 	next := <-url
 	// get from api
-	var result map[string]map[string]*json.RawMessage
+	var result map[string]interface{}
 	headers := map[string]string{
 		"Host":         "api.instagram.com",
 		"X-Target-URI": "https://api.instagram.com",
@@ -167,23 +167,33 @@ func getPictureFromApi(url chan string) []Picture {
 	}
 	content := HttpGet(next, nil, headers)
 	json.Unmarshal([]byte(content), &result)
-	fmt.Println(*result["meta"]["error_message"])
-	fmt.Println(*result["meta"]["error_code"])
-	if errName := *result["meta"]["error_type"]; errName != nil {
-		log.Fatal("error type: " + string(errName) + ", probably access_token expired")
+
+	meta := result["meta"].(map[string]interface{})
+	if errName := meta["error_type"]; errName != nil {
+		log.Fatal("error type: " + errName.(string) + ", probably access_token expired")
 	}
 
-	imageId := *result["data"]["id"]
-	imagesBytes := result["data"]["images"]
-	var images map[string]map[string]*json.RawMessage
-	json.Unmarshal(*imagesBytes, &images)
-	imageUrl := *images["standard_resolution"]["url"]
-	nowTime := int(time.Now().Unix())
+	fmt.Println(meta)
 
-	pic := Picture{Id: string(imageId), Url: string(imageUrl), Status: 0, CreatedTime: nowTime}
-	pics = append(pics, pic)
+	pagination := result["pagination"].(map[string]string)
 
-	url <- string(*result["pagination"]["next_url"])
+	fmt.Println(pagination)
+
+	data := result["data"].([]map[string]interface{})
+	for _, feed := range data {
+		imageId := feed["id"].(string)
+		images := feed["images"].(map[string]interface{})
+		stdImage := images["standard_resolution"].(map[string]string)
+		imageUrl := stdImage["url"]
+		nowTime := int(time.Now().Unix())
+
+		pic := Picture{Id: string(imageId), Url: string(imageUrl), Status: 0, CreatedTime: nowTime}
+		pics = append(pics, pic)
+
+		fmt.Println(pic)
+	}
+
+	url <- string(pagination["next_url"])
 	return pics
 }
 
