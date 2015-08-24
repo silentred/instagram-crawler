@@ -24,9 +24,30 @@ type Message struct {
 	Data   string `json:"data"`
 }
 
-func (user User) Insert() int {
-	sql := "insert into user (orig_id, name, access_token, last_auth_time, valid) values (:orig_id, :name, :access_token, :last_auth_time, :valid)"
-	result, err := mysqlDB.NamedExec(sql, &user)
+func (user *User) Insert() int {
+	sql := "insert ignore into user (orig_id, name, access_token, last_auth_time, valid) values (:orig_id, :name, :access_token, :last_auth_time, :valid)"
+	result, err := mysqlDB.NamedExec(sql, user)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return int(rowsAffected)
+}
+
+func (user *User) GetById(id string) {
+	sql := "select * from user where orig_id = ?"
+	err := mysqlDB.Get(user, sql, id)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (pic Picture) Insert() int {
+	sql := "insert ignore into picture (orig_id, pic_url, status, created_time) values (:orig_id, :pic_url, :status, :created_time)"
+	result, err := mysqlDB.NamedExec(sql, &pic)
 	if err != nil {
 		log.Fatal(err)
 	}

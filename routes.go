@@ -31,6 +31,13 @@ func getIndex(req *http.Request, params martini.Params, rd render.Render, sessio
 	// }
 	// fmt.Printf("%#v\n", pic)
 
+	// user := &User{Id: "123", Name: "jason", AccessToken: "123123", LastAuthTime: 432123, Valid: 1}
+	// ret := user.Insert()
+	// fmt.Println(ret)
+	user := &User{}
+	user.GetById("123")
+	fmt.Println(*user)
+
 	url := fmt.Sprintf(API_URL, ClientId, RedirectUrl)
 
 	rd.HTML(200, "auth_index", H{
@@ -44,20 +51,23 @@ func getRedirectBack(req *http.Request, rd render.Render, db *sqlx.DB, session s
 
 	// request the token with code
 	code := req.URL.Query().Get("code")
+	fmt.Println(code)
+
 	err_reason := req.URL.Query().Get("error_reason")
 	if err_reason != "" {
 		rd.Redirect("/oauth/instagram", 302)
 	}
 
 	// get username, userid
-	params := map[string]string{
+	postBody := map[string]string{
 		"client_id":     ClientId,
 		"client_secret": ClientSecret,
 		"grant_type":    "authorization_code",
 		"redirect_uri":  RedirectUrl,
 		"code":          code,
 	}
-	content := HttpGet("https://api.instagram.com/oauth/access_token", params, nil)
+	content := HttpPost("https://api.instagram.com/oauth/access_token", postBody, nil, nil)
+	fmt.Println(content)
 
 	var mainContent map[string]*json.RawMessage
 	json.Unmarshal([]byte(content), &mainContent)
@@ -70,60 +80,67 @@ func getRedirectBack(req *http.Request, rd render.Render, db *sqlx.DB, session s
 	nowTime := int(time.Now().Unix())
 
 	// save user, token.
-	user := User{Id: userId, Name: userName, AccessToken: token, LastAuthTime: nowTime, Valid: 1}
+	user := &User{Id: userId, Name: userName, AccessToken: token, LastAuthTime: nowTime, Valid: 1}
 	_ = user.Insert()
 
 	// @TODO Or update
 
 	rd.HTML(200, "redirect_back", H{
 		"userName": userName,
+		"userId":   userId,
 	})
 
 }
 
-func init() {
-	jobs := make(chan Picture, 50)
-	quit := make(chan int)
+var Jobs chan Picture
+var Quit chan int
+var NextURL chan string
+var DoneCnt <-chan int
 
-	nextURL := make(chan string)
-	nextURL <- RecentURL
+func init() {
+	Jobs = make(chan Picture, 50)
+	Quit = make(chan int)
+
+	NextURL = make(chan string)
+	//nextURL <- RecentURL // 通过传入 url来启动抓取
 
 	// 任务队列放在全局执行，ws来控制是否开始或停止。 任务队列如果放在wsHandler中，一旦连接关闭，整个任务就停止了。
-	out := preparePicture(jobs, nextURL, quit)
-	doneCnt := savingPicture(out)
-	
+	out := preparePicture(Jobs, NextURL, Quit)
+	DoneCnt = savingPicture(out)
 }
 
-func wsHandler(params martini.Params, receiver <-chan *Message, sender chan<- *Message, done <-chan bool, disconnect chan<- int, errorChannel <-chan error) {
+func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Message, done <-chan bool, disconnect chan<- int, errorChannel <-chan error) {
 
-	// ticker = time.After(30 * time.Minute)
-	
+	go func() {
+		for {
+			val := <-DoneCnt
+			ret := &Message{Action: "DoneCnt", Data: string(val)}
+			sender <- ret
+		}
+	}()
+
 	for {
 		select {
 		case msg := <-receiver:
-			// here we simply echo the received message to the sender for demonstration purposes
 			// In your app, collect the senders of different clients and do something useful with them
 			switch msg.Action {
 			case "start":
-				
-
-			case "stop":
-				quit <- 1
-			}
-
-			go func () {
-				for {
-					val := <- doneCnt
-					ret := &Message{Action: "doneCnt", Data: val}
-					sender <- ret
+				// get userId, get access_token from DB
+				userId := req.URL.Query().Get("userId")
+				user := &User{}
+				user.GetById(userId)
+				if user == nil {
+					log.Fatal("cannot get user by id: " + userId)
 				}
+				access_token := user.AccessToken
+
+				// give value to nextURL, so the goroutine could start
+				url := fmt.Sprintf(RecentURL, access_token)
+				NextURL <- url
+			case "stop":
+				Quit <- 1
 			}
-			
-		//case <-ticker:
-		// This will close the connection after 30 minutes no matter what
-		// To demonstrate use of the disconnect channel
-		// You can use close codes according to RFC 6455
-		//	disconnect <- websocket.CloseNormalClosure
+
 		case <-done:
 			// the client disconnected, so you should return / break if the done channel gets sent a message
 			fmt.Println("client close the connection. is server loop still going?")
@@ -144,13 +161,29 @@ func getPictureFromApi(url chan string) []Picture {
 	pics := make([]Picture, 0, 30)
 	next := <-url
 	// get from api
-	var result map[string]*json.RawMessage
-	url <- string(*result["next_url"])
+	var result map[string]map[string]*json.RawMessage
+	content := HttpGet(next, nil, nil)
+	json.Unmarshal([]byte(content), &result)
+	if errName := *result["meta"]["error_type"]; errName != nil {
+		log.Fatal("error type: " + string(errName) + ", probably access_token expired")
+	}
+
+	imageId := *result["data"]["id"]
+	imagesBytes := result["data"]["images"]
+	var images map[string]map[string]*json.RawMessage
+	json.Unmarshal(*imagesBytes, &images)
+	imageUrl := *images["standard_resolution"]["url"]
+	nowTime := int(time.Now().Unix())
+
+	pic := Picture{Id: string(imageId), Url: string(imageUrl), Status: 0, CreatedTime: nowTime}
+	pics = append(pics, pic)
+
+	url <- string(*result["pagination"]["next_url"])
 	return pics
 }
 
 func preparePicture(jobs chan Picture, url chan string, quit chan int) <-chan Picture {
-	
+
 	// continously getting pics from api, fill jobs with recieved pics
 	go func() {
 		for {
@@ -158,10 +191,9 @@ func preparePicture(jobs chan Picture, url chan string, quit chan int) <-chan Pi
 			case <-quit:
 				return
 			default:
-				// nextURL is a global channel
 				pics := getPictureFromApi(url)
 				for _, pic := range pics {
-					jobs <- pic
+					Jobs <- pic
 				}
 			}
 
@@ -175,7 +207,7 @@ func savingPicture(jobs <-chan Picture) <-chan int {
 	// continously saving the pics from jobs , and downloading them
 	go func() {
 		for {
-			pic <- jobs
+			pic := <-jobs
 			pic.Insert()
 			Download(pic.Url, DeterminDst(pic.Url))
 			done <- 1
