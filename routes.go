@@ -137,6 +137,8 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 				reqIds := strings.Split(msg.Data, ",")
 				Targets = append(Targets, reqIds...)
 
+				log.Println(Targets)
+
 				// 通过传入 url来启动抓取, for传入url
 				for _, id := range Targets {
 					// give value to nextURL, so the goroutine could start

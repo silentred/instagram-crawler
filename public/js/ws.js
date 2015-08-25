@@ -13,7 +13,7 @@ $("#wsConn").click(function(){
         //console.log("recieve message...");
     
         var obj = $.parseJSON(e.data);
-        console.log(obj);
+        //console.log(obj);
         var cnt = parseInt(obj.data);
 
         // need to be precise. cnt is NaN
