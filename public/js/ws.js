@@ -39,6 +39,9 @@ $("#wsSend").click(function(){
 
     console.log("sending the message");
     ws.send(JSON.stringify(msg));
+
+    // empty the textArea
+    $("#userIds").val("");
 })
 
 $("#wsQuit").click(function(){

@@ -13,17 +13,19 @@
         <button id="wsSend" type="button" class="btn btn-primary">开始发送数据</button>
         <button id="wsQuit" type="button" class="btn btn-primary">停止</button>
 
-        <p>辅助功能：查询用户ID</p>
-        <form class="form-inline">
-          <div class="form-group">
-            <label class="sr-only" for="exampleInputEmail3">根据主页URL查询用户ID</label>
-            <input type="text" class="form-control" id="homePage">
-          </div>
-          <div class="form-group">
-            <label class="sr-only" for="exampleInputPassword3">结果ID</label>
-            <input type="text" class="form-control" id="resultUserId" >
-          </div>
-          <button id="queryUserIdBtn" class="btn btn-default">查询</button>
-        </form>
+        <div class="row">
+            <h3>辅助功能：查询用户ID，把结果复制到上面TextArea</h3>
+            <form class="form-inline">
+              <div class="form-group col-sm-6">
+                <label class="sr-only" for=>根据主页URL查询用户ID</label>
+                <input type="text" class="form-control" id="homePage" placeholder="以https://开头，例如：https://instagram.com/womancrushing/" style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label class="sr-only" for="exampleInputPassword3">结果ID</label>
+                <input type="text" class="form-control" id="resultUserId" placeholder="结果UserId" >
+              </div>
+              <button id="queryUserIdBtn" class="btn btn-default">查询</button>
+            </form>
+        </div>
     </div>
 </div>
