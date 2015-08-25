@@ -11,11 +11,13 @@ $("#wsConn").click(function(){
 
     ws.addEventListener("message", function(e){
         //console.log("recieve message...");
-        console.log(e);
-
+    
         var obj = $.parseJSON(e.data);
+        console.log(obj);
         var cnt = parseInt(obj.data);
-        doneCnt += cnt;
+
+        // need to be precise. cnt is NaN
+        doneCnt += 1;
         cntDom.text(doneCnt);
     })
     
