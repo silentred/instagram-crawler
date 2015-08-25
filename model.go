@@ -45,6 +45,11 @@ func (user *User) GetById(id string) {
 	}
 }
 
+func (user *User) UpdateToken(id, token string) {
+	sql := "update user set access_token = ? where orig_id = ?"
+	mysqlDB.MustExec(sql, token, id)
+}
+
 func (pic Picture) Insert() int {
 	sql := "insert ignore into picture (orig_id, pic_url, status, created_time) values (:orig_id, :pic_url, :status, :created_time)"
 	result, err := mysqlDB.NamedExec(sql, &pic)

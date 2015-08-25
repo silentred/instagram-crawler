@@ -78,9 +78,12 @@ func getRedirectBack(req *http.Request, rd render.Render, db *sqlx.DB, session s
 
 	// save user, token.
 	user := &User{Id: userId, Name: userName, AccessToken: token, LastAuthTime: nowTime, Valid: 1}
-	_ = user.Insert()
+	affect := user.Insert()
 
-	// @TODO Or update
+	// Or update the token
+	if affect == 0 {
+		user.UpdateToken(userId, token)
+	}
 
 	rd.HTML(200, "redirect_back", H{
 		"userName": userName,
@@ -100,7 +103,7 @@ func init() {
 	Quit = make(chan int)
 
 	NextURL = make(chan string, 30)
-	Targets = []string{"25025320"}
+	Targets = []string{}
 
 	// 任务队列放在全局执行，ws来控制是否开始或停止。 任务队列如果放在wsHandler中，一旦连接关闭，整个任务就停止了。
 	preparePicture()
@@ -137,6 +140,8 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 				log.Println(msg.Data)
 				reqIds := strings.Split(msg.Data, ",")
 				log.Println(reqIds)
+				// empty the Targets, so every pushed ids will not be duplicated
+				Targets = []string{}
 				Targets = append(Targets, reqIds...)
 
 				log.Println(Targets)

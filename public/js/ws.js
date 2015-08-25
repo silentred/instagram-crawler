@@ -28,12 +28,12 @@ $("#wsConn").click(function(){
 
 $("#wsSend").click(function(){
     var text = $("#userIds").val();
-    var aIds = text.trim().split(/[., -\n\r]/);
+    var aIds = text.trim().split(/[\., -\n\r]/);
     var numRegex = /d+/;
     aIds = aIds.map(function(item){
         if (numRegex.test(item)) {return item};
     }); 
-    data = aIds.join(',');
+    var data = aIds.join(',');
 
     var msg = {action: "start", data: text};
 
