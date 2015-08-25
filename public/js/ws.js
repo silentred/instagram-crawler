@@ -23,6 +23,7 @@ $("#wsConn").click(function(){
     
     ws.addEventListener("open", function(e){
         console.log(e)
+        // @TODO alert if the connection is established
     })
 });
 

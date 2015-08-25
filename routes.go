@@ -150,7 +150,7 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 				fmt.Println(access_token)
 
 				// if not preparing jobs, to the prepare
-				if IsPreparingJobs == false {
+				if !IsPreparingJobs {
 					preparePicture()
 				}
 
@@ -174,7 +174,10 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 
 				sender <- msg
 			case "stop":
-				Quit <- 1
+				if IsPreparingJobs {
+					Quit <- 1
+				}
+
 			}
 
 		case <-done:
