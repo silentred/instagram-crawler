@@ -94,6 +94,7 @@ func getRedirectBack(req *http.Request, rd render.Render, db *sqlx.DB, session s
 
 func ajaxGetUserId(req *http.Request, rd render.Render) {
 	url := req.URL.Query().Get("url")
+	log.Println(url)
 	content := HttpGet(url, nil, nil)
 	id := ExtractUserId(content)
 	log.Println(id)
