@@ -137,7 +137,7 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 				log.Println(msg.Data)
 				reqIds := strings.Split(msg.Data, ",")
 				log.Println(reqIds)
-				//Targets = append(Targets, reqIds...)
+				Targets = append(Targets, reqIds...)
 
 				log.Println(Targets)
 
