@@ -184,7 +184,8 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 		case err := <-errorChannel:
 			// Uh oh, we received an error. This will happen before a close if the client did not disconnect regularly.
 			// Maybe useful if you want to store statistics
-			log.Fatal(err)
+			log.Println(err)
+			return
 		}
 	}
 
