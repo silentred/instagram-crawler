@@ -28,7 +28,7 @@ $("#wsConn").click(function(){
 
 $("#wsSend").click(function(){
     var text = $("#userIds").val();
-    var aIds = text.trim().split(/[\., -\n\r]/);
+    var aIds = text.trim().split(/[\., -]/);
     var numRegex = /d+/;
     aIds = aIds.map(function(item){
         if (numRegex.test(item)) {return item};
