@@ -11,7 +11,8 @@ $("#wsConn").click(function(){
 
     ws.addEventListener("message", function(e){
         //console.log("recieve message...");
-        console.log(e.data);
+        console.log(e);
+
         var obj = $.parseJSON(e.data);
         var cnt = parseInt(obj.data);
         doneCnt += cnt;
@@ -24,7 +25,16 @@ $("#wsConn").click(function(){
 });
 
 $("#wsSend").click(function(){
-    var msg = {action: "start"};
+    var text = $("#userIds").text();
+    var aIds = text.trim().split(/[., -]/);
+    var numRegex = /d+/;
+    aIds = aIds.map(function(item){
+        if (numRegex.test(item)) {return item};
+    });
+    data = aIds.join(',');
+
+    var msg = {action: "start", data: data};
+
     console.log("sending the message");
     ws.send(JSON.stringify(msg));
 })

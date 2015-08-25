@@ -10,6 +10,7 @@ import (
 	"github.com/martini-contrib/sessions"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -98,7 +99,7 @@ func init() {
 	Jobs = make(chan Picture, 100)
 	Quit = make(chan int)
 
-	NextURL = make(chan string, 2)
+	NextURL = make(chan string, 30)
 	Targets = []string{"25025320"}
 
 	// 任务队列放在全局执行，ws来控制是否开始或停止。 任务队列如果放在wsHandler中，一旦连接关闭，整个任务就停止了。
@@ -131,6 +132,10 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 				}
 				access_token := user.AccessToken
 				fmt.Println(access_token)
+
+				// set all requested userID
+				reqIds := strings.Split(msg.Data, ",")
+				Targets = append(Targets, reqIds...)
 
 				// 通过传入 url来启动抓取, for传入url
 				for _, id := range Targets {

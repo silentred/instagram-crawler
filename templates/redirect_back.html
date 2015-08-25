@@ -2,9 +2,15 @@
     <div class="row">
         <h2>成功授权，{{.userName}}</h2>
         <h3>UserId: <span id="userId">{{.userId}}</span></h3>
+        
+        <h3>已完成数量: <span id="doneCnt">0</span></h3>
+        <div class="form-group">
+            <label for="exampleInputEmail1">抓取用户的ID，英文逗号分隔</label>
+            <textarea id="userIds" class="form-control" rows="3"></textarea>
+        </div>
+
         <button id="wsConn" type="button" class="btn btn-primary">点击连接</button>
-        <button id="wsSend" type="button" class="btn btn-primary">发送数据</button>
+        <button id="wsSend" type="button" class="btn btn-primary">开始发送数据</button>
         <button id="wsQuit" type="button" class="btn btn-primary">停止</button>
-        <h3 id="doneCnt">0</h3>
     </div>
 </div>
