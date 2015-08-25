@@ -27,6 +27,7 @@ var mysqlDB *sqlx.DB
 type H map[string]interface{}
 
 func main() {
+	martini.Env = martini.Prod
 	m := martini.Classic()
 	// render html templates from templates directory
 	configRender(m)
