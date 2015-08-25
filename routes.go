@@ -92,13 +92,14 @@ var Jobs chan Picture
 var Quit chan int
 var NextURL chan string
 var DoneCnt <-chan int
+var Targets []string
 
 func init() {
 	Jobs = make(chan Picture, 100)
 	Quit = make(chan int)
 
-	NextURL = make(chan string, 1)
-	//nextURL <- RecentURL // 通过传入 url来启动抓取
+	NextURL = make(chan string, 2)
+	Targets = []string{"25025320"}
 
 	// 任务队列放在全局执行，ws来控制是否开始或停止。 任务队列如果放在wsHandler中，一旦连接关闭，整个任务就停止了。
 	preparePicture()
@@ -110,7 +111,7 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 	go func() {
 		for {
 			val := <-DoneCnt
-			ret := &Message{Action: "DoneCnt", Data: string(val)}
+			ret := &Message{Action: "DoneCnt", Data: fmt.Sprintf("%d", val)}
 			sender <- ret
 		}
 	}()
@@ -131,10 +132,13 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 				access_token := user.AccessToken
 				fmt.Println(access_token)
 
-				// give value to nextURL, so the goroutine could start
-				url := fmt.Sprintf(RecentURL, access_token)
-				fmt.Println(url)
-				NextURL <- url
+				// 通过传入 url来启动抓取, for传入url
+				for _, id := range Targets {
+					// give value to nextURL, so the goroutine could start
+					url := fmt.Sprintf(UserRecentURL, id, access_token)
+					fmt.Println(url)
+					NextURL <- url
+				}
 
 				sender <- msg
 			case "stop":
@@ -197,13 +201,15 @@ func getPictureFromApi() []Picture {
 	}
 	//fmt.Println(pics)
 
-	nextOne := pagination["next_url"].(string)
-	fmt.Println(nextOne)
-
-	fmt.Println("the NextURL len is ")
-	//fmt.Println(len(NextURL))
-
-	NextURL <- nextOne
+	// assert may fail, cause the end of paging
+	var nextOne string
+	if val, ok := pagination["next_url"].(string); ok {
+		nextOne = val
+		fmt.Println(nextOne)
+		NextURL <- nextOne
+	} else {
+		log.Println("No more next_url")
+	}
 
 	fmt.Println(len(NextURL))
 
