@@ -49,7 +49,7 @@ $("#wsQuit").click(function(){
 
 $("#queryUserIdBtn").click(function(){
     var url = $("#homePage").val();
-    $.ajax(
+    $.ajax({
         url:'/oauth/ajaxGetUserId',
         data:{    
             url : url
@@ -64,7 +64,7 @@ $("#queryUserIdBtn").click(function(){
              console.log(e);    
         }    
 
-    );
+    });
 });
 
 
