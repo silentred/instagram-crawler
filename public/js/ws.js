@@ -29,7 +29,7 @@ $("#wsConn").click(function(){
 $("#wsSend").click(function(){
     var text = $("#userIds").val();
     var aIds = text.trim().split(/[\., -]/);
-    var numRegex = /d+/;
+    var numRegex = /\d+/;
     aIds = aIds.map(function(item){
         if (numRegex.test(item)) {return item};
     }); 
@@ -45,6 +45,26 @@ $("#wsQuit").click(function(){
     var msg = {action: "stop"};
     console.log("stoping the message");
     ws.send(JSON.stringify(msg));
+});
+
+$("#queryUserIdBtn").click(function(){
+    var url = $("#homePage").val();
+    $.ajax(
+        url:'/oauth/ajaxGetUserId',
+        data:{    
+            url : url
+        },    
+        type:'get',    
+        cache:false,    
+        dataType:'json',    
+        success:function(data) {    
+            $("#resultUserId").val(data.userId)
+        },    
+        error : function(e) {    
+             console.log(e);    
+        }    
+
+    );
 });
 
 

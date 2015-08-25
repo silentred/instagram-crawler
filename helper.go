@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -118,4 +119,12 @@ func HttpPost(apiUrl string, postBody, params, headers map[string]string) string
 	}
 	return string(contents)
 
+}
+
+func ExtractUserId(source string) string {
+	reg := regexp.MustCompile(`{"id":"(\d+)"}`)
+	catpture := reg.FindAllStringSubmatch(source, -1)
+	val := catpture[0][1]
+	//log.Println(val)
+	return val
 }

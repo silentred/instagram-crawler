@@ -44,6 +44,7 @@ func main() {
 	m.Group("/oauth", func(r martini.Router) {
 		r.Get("/:appName", getIndex)
 		r.Get("/instagram/back", getRedirectBack)
+		r.Get("/ajaxGetUserId", ajaxGetUserId)
 	})
 
 	m.Get("/ws", sockets.JSON(Message{}), wsHandler)
