@@ -109,6 +109,7 @@ var Quit chan int
 var NextURL chan string
 var DoneCnt <-chan int
 var Targets []string
+var IsPreparingJobs bool
 
 func init() {
 	Jobs = make(chan Picture, 100)
@@ -148,6 +149,11 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 				access_token := user.AccessToken
 				fmt.Println(access_token)
 
+				// if not preparing jobs, to the prepare
+				if IsPreparingJobs == false {
+					preparePicture()
+				}
+
 				// set all requested userID
 				log.Println(msg.Data)
 				reqIds := strings.Split(msg.Data, ",")
@@ -174,7 +180,7 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 		case <-done:
 			// the client disconnected, so you should return / break if the done channel gets sent a message
 			fmt.Println("client close the connection. is server loop still going?")
-			//return
+			return
 		case err := <-errorChannel:
 			// Uh oh, we received an error. This will happen before a close if the client did not disconnect regularly.
 			// Maybe useful if you want to store statistics
@@ -250,6 +256,7 @@ func preparePicture() {
 			select {
 			case <-Quit:
 				fmt.Println("quiting the preparePicture() functino.")
+				IsPreparingJobs = false
 				return
 			default:
 				pics := getPictureFromApi()
@@ -261,6 +268,8 @@ func preparePicture() {
 
 		}
 	}()
+
+	IsPreparingJobs = true
 }
 
 func savingPicture() <-chan int {
