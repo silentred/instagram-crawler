@@ -1,7 +1,8 @@
 $(function(){
 
 var userId = $("#userId").text();
-var doneCnt = parseInt($("#doneCnt").text());
+var doneCnt = 0;
+var cntDom = $("#doneCnt");
 
 var ws;
 
@@ -11,9 +12,10 @@ $("#wsConn").click(function(){
     ws.addEventListener("message", function(e){
         //console.log("recieve message...");
         console.log(e.data);
-        var cnt = parseInt(e.data.data);
+        var obj = $.parseJSON(e.data);
+        var cnt = parseInt(obj.data);
         doneCnt += cnt;
-        $("#doneCnt").text(doneCnt);
+        cntDom.text(doneCnt);
     })
     
     ws.addEventListener("open", function(e){
