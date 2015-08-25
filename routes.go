@@ -134,8 +134,10 @@ func wsHandler(req *http.Request, receiver <-chan *Message, sender chan<- *Messa
 				fmt.Println(access_token)
 
 				// set all requested userID
+				log.Println(msg.Data)
 				reqIds := strings.Split(msg.Data, ",")
-				Targets = append(Targets, reqIds...)
+				log.Println(reqIds)
+				//Targets = append(Targets, reqIds...)
 
 				log.Println(Targets)
 
