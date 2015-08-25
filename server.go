@@ -42,7 +42,7 @@ func main() {
 	m.Use(sessions.Sessions("go_session", store))
 
 	m.Group("/oauth", func(r martini.Router) {
-		r.Get("/:appName", getIndex)
+		r.Get("/instagram", getIndex)
 		r.Get("/instagram/back", getRedirectBack)
 		r.Get("/ajaxGetUserId", ajaxGetUserId)
 	})
