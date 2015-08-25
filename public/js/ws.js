@@ -65,6 +65,7 @@ $("#queryUserIdBtn").click(function(){
         }    
 
     });
+    return false;
 });
 
 
