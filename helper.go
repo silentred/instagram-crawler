@@ -69,9 +69,12 @@ func HttpGet(url string, params, headers map[string]string) string {
 		log.Fatal(err)
 	}
 
-	for key, value := range headers {
-		request.Header.Add(key, value)
+	if headers != nil {
+		for key, value := range headers {
+			request.Header.Add(key, value)
+		}
 	}
+
 	response, err := client.Do(request)
 	defer response.Body.Close()
 	if err != nil {
