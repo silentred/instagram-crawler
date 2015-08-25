@@ -252,7 +252,7 @@ func savingPicture() <-chan int {
 	go func() {
 		for {
 			pic := <-Jobs
-			fmt.Println("downloading the pic: " + pic.Id)
+			//fmt.Println("downloading the pic: " + pic.Id)
 			pic.Insert()
 			Download(pic.Url, DeterminDst(pic.Url))
 			done <- 1
