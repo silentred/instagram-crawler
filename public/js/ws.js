@@ -28,14 +28,16 @@ $("#wsConn").click(function(){
 
 $("#wsSend").click(function(){
     var text = $("#userIds").text();
-    var aIds = text.trim().split(/[., -]/);
+    //var aIds = text.trim().split(/[., -]/);
+    /**
     var numRegex = /d+/;
     aIds = aIds.map(function(item){
         if (numRegex.test(item)) {return item};
-    });
-    data = aIds.join(',');
+    }); 
+**/
+    //data = aIds.join(',');
 
-    var msg = {action: "start", data: data};
+    var msg = {action: "start", data: text};
 
     console.log("sending the message");
     ws.send(JSON.stringify(msg));
