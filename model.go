@@ -26,7 +26,7 @@ type Message struct {
 
 func (user *User) Insert() int {
 	sql := "insert ignore into user (orig_id, name, access_token, last_auth_time, valid) values (:orig_id, :name, :access_token, :last_auth_time, :valid)"
-	result, err := mysqlDB.NamedExec(sql, user)
+	result, err := MysqlDB.NamedExec(sql, user)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,7 +39,7 @@ func (user *User) Insert() int {
 
 func (user *User) GetById(id string) {
 	sql := "select * from user where orig_id = ?"
-	err := mysqlDB.Get(user, sql, id)
+	err := MysqlDB.Get(user, sql, id)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,12 +47,12 @@ func (user *User) GetById(id string) {
 
 func (user *User) UpdateToken(id, token string) {
 	sql := "update user set access_token = ? where orig_id = ?"
-	mysqlDB.MustExec(sql, token, id)
+	MysqlDB.MustExec(sql, token, id)
 }
 
 func (pic Picture) Insert() int {
 	sql := "insert ignore into picture (orig_id, pic_url, status, created_time) values (:orig_id, :pic_url, :status, :created_time)"
-	result, err := mysqlDB.NamedExec(sql, &pic)
+	result, err := MysqlDB.NamedExec(sql, &pic)
 	if err != nil {
 		log.Fatal(err)
 	}

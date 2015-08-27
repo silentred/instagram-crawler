@@ -22,18 +22,22 @@ const (
 )
 
 // db作为全局变量存在不太好，想办法从Injecter中取出比较好
-var mysqlDB *sqlx.DB
+var MysqlDB *sqlx.DB
+var m *martini.ClassicMartini
 
 type H map[string]interface{}
 
+func init() {
+	m = martini.Classic()
+	// map DB to context
+	MysqlDB = initMySQL(m)
+
+}
+
 func main() {
 	martini.Env = martini.Prod
-	m := martini.Classic()
 	// render html templates from templates directory
 	configRender(m)
-
-	// map DB to context
-	mysqlDB = initMySQL(m)
 
 	// serve static files; default is public
 	m.Use(martini.Static("public"))
